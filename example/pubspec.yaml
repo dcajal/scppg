@@ -1,0 +1,22 @@
+name: scppg_example
+description: An example for using the scppg package.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  camera: ^0.11.1
+  permission_handler: ^11.4.0
+  get_it: ^7.6.7
+  syncfusion_flutter_charts: ^28.1.33
+  scppg: 
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  test: ^1.24.0
