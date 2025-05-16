@@ -51,15 +51,15 @@ class ScppgController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Camera controller instance
   CameraController? _cameraController;
   CameraController get cameraController => _cameraController!;
 
+  /// Timestamp of the last frame
   DateTime? _now;
   DateTime? get now => _now;
 
-  DateTime? _previous;
-  DateTime? get previous => _previous;
-
+  /// SCPPG data object
   SCPPGData? _scppgData;
   SCPPGData? get ppgData => _scppgData;
 
@@ -91,6 +91,7 @@ class ScppgController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Initialize the camera controller
   Future<void> _initController() async {
     List<CameraDescription> cameras = await availableCameras();
     _cameraController = CameraController(
@@ -107,6 +108,7 @@ class ScppgController extends ChangeNotifier {
     _cameraController!.startImageStream(_scanImage);
   }
 
+  /// Dispose of the camera controller
   void _disposeController() {
     try {
       _cameraController?.stopImageStream();
@@ -115,9 +117,8 @@ class ScppgController extends ChangeNotifier {
     _cameraController = null;
   }
 
+  /// Process camera image frames
   void _scanImage(CameraImage image) {
-    // Controller is always active when camera stream is running
-    _previous = _now ?? DateTime.now();
     _now = DateTime.now();
 
     // Compute YUV averages
