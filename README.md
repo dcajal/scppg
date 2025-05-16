@@ -202,4 +202,4 @@ Please file issues, bugs, or feature requests in our [issue tracker](https://git
 
 ### License
 
-This project is licensed under the [MIT](LICENSE) - see the LICENSE file for details.
+This project is licensed under the [MIT](LICENSE) License - see the LICENSE file for details.
