@@ -8,3 +8,6 @@ pubspec.lock
 
 # Avoid committing the generated files.
 build/
+
+.flutter-plugins-dependencies
+.flutter-plugins
