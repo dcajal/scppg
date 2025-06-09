@@ -13,7 +13,17 @@ and the Flutter guide for
 
 # SCPPG - Smartphone Camera Photoplethysmography
 
+[![pub package](https://img.shields.io/pub/v/scppg.svg)](https://pub.dev/packages/scppg)
+[![pub points](https://img.shields.io/pub/points/scppg)](https://pub.dev/packages/scppg/score)
+[![likes](https://img.shields.io/pub/likes/scppg)](https://pub.dev/packages/scppg/score)
+
 A Flutter package for smartphone camera photoplethysmography (SCPPG) that enables heart rate monitoring using smartphone cameras.
+
+## Links
+
+- **[Package on pub.dev](https://pub.dev/packages/scppg)** - Main package page
+- **[Package Score](https://pub.dev/packages/scppg/score)** - Package quality score and metrics
+- **[API Documentation](https://pub.dev/documentation/scppg/latest/)** - Detailed API reference
 
 ## Features
 
