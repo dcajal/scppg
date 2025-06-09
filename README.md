@@ -198,7 +198,7 @@ For more information on using SCPPG for heart rate monitoring, see:
 
 ### Issues and Feedback
 
-Please file issues, bugs, or feature requests in our [issue tracker](https://github.com/yourusername/scppg/issues).
+Please file issues, bugs, or feature requests in our [issue tracker](https://github.com/dcajal/scppg/issues).
 
 ### License
 
