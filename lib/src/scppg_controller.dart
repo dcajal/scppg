@@ -39,6 +39,14 @@ class ScppgController extends ChangeNotifier {
   /// Allow external toggle of exposure lock state
   set isFocusAndExposureLocked(bool value) {
     _isFocusAndExposureLocked = value;
+    if (_cameraController != null) {
+      _cameraController!.setFocusMode(
+        value ? FocusMode.locked : FocusMode.auto,
+      );
+      _cameraController!.setExposureMode(
+        value ? ExposureMode.locked : ExposureMode.auto,
+      );
+    }
     notifyListeners();
   }
 
@@ -48,12 +56,21 @@ class ScppgController extends ChangeNotifier {
   /// Allow external toggle of flash state
   set isFlashOn(bool value) {
     _isFlashOn = value;
+    if (_cameraController != null) {
+      _cameraController!.setFlashMode(value ? FlashMode.torch : FlashMode.off);
+    }
     notifyListeners();
   }
 
   /// Camera controller instance
   CameraController? _cameraController;
   CameraController get cameraController => _cameraController!;
+
+  /// Allow external access to the camera controller
+  set cameraController(CameraController? controller) {
+    _cameraController = controller;
+    notifyListeners();
+  }
 
   /// Timestamp of the last frame
   DateTime? _now;

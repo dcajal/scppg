@@ -10,7 +10,17 @@ class MockCameraDescription extends Mock {
   String get name => "Mock Camera";
 }
 
+// Additional mock class needed for the tests
+class MockCameraController extends Mock implements CameraController {}
+
 void main() {
+  // Register fallback values for enum types used in mocks
+  setUpAll(() {
+    registerFallbackValue(FlashMode.off);
+    registerFallbackValue(FocusMode.auto);
+    registerFallbackValue(ExposureMode.auto);
+  });
+
   late ScppgController scppgController;
 
   setUp(() {
@@ -131,6 +141,159 @@ void main() {
       expect(data.g, 80.0);
       expect(data.b, 40.0);
       expect(data.timestamp, isNotNull);
+    });
+  });
+
+  group('Camera controller interaction tests', () {
+    late MockCameraController mockCameraController;
+
+    setUp(() {
+      mockCameraController = MockCameraController();
+    });
+
+    test(
+      'isFlashOn setter should call setFlashMode when camera controller exists',
+      () {
+        // Arrange: Set up the mock camera controller
+        scppgController.cameraController = mockCameraController;
+        when(
+          () => mockCameraController.setFlashMode(any()),
+        ).thenAnswer((_) async {});
+
+        // Act: Set flash on
+        scppgController.isFlashOn = true;
+
+        // Assert: Verify the camera controller method was called
+        verify(
+          () => mockCameraController.setFlashMode(FlashMode.torch),
+        ).called(1);
+        expect(scppgController.isFlashOn, true);
+      },
+    );
+
+    test(
+      'isFlashOn setter should call setFlashMode with off when set to false',
+      () {
+        // Arrange
+        scppgController.cameraController = mockCameraController;
+        when(
+          () => mockCameraController.setFlashMode(any()),
+        ).thenAnswer((_) async {});
+
+        // Act
+        scppgController.isFlashOn = false;
+
+        // Assert
+        verify(
+          () => mockCameraController.setFlashMode(FlashMode.off),
+        ).called(1);
+        expect(scppgController.isFlashOn, false);
+      },
+    );
+
+    test(
+      'isFlashOn setter should not crash when camera controller is null',
+      () {
+        // Arrange: Ensure camera controller is null
+        scppgController.cameraController = null;
+
+        // Act & Assert: Should not throw
+        expect(() => scppgController.isFlashOn = true, returnsNormally);
+        expect(scppgController.isFlashOn, true);
+      },
+    );
+
+    test(
+      'isFocusAndExposureLocked setter should call focus and exposure methods when true',
+      () {
+        // Arrange
+        scppgController.cameraController = mockCameraController;
+        when(
+          () => mockCameraController.setFocusMode(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockCameraController.setExposureMode(any()),
+        ).thenAnswer((_) async {});
+
+        // Act
+        scppgController.isFocusAndExposureLocked = true;
+
+        // Assert
+        verify(
+          () => mockCameraController.setFocusMode(FocusMode.locked),
+        ).called(1);
+        verify(
+          () => mockCameraController.setExposureMode(ExposureMode.locked),
+        ).called(1);
+        expect(scppgController.isFocusAndExposureLocked, true);
+      },
+    );
+
+    test(
+      'isFocusAndExposureLocked setter should call focus and exposure methods when false',
+      () {
+        // Arrange
+        scppgController.cameraController = mockCameraController;
+        when(
+          () => mockCameraController.setFocusMode(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockCameraController.setExposureMode(any()),
+        ).thenAnswer((_) async {});
+
+        // Act
+        scppgController.isFocusAndExposureLocked = false;
+
+        // Assert
+        verify(
+          () => mockCameraController.setFocusMode(FocusMode.auto),
+        ).called(1);
+        verify(
+          () => mockCameraController.setExposureMode(ExposureMode.auto),
+        ).called(1);
+        expect(scppgController.isFocusAndExposureLocked, false);
+      },
+    );
+
+    test(
+      'isFocusAndExposureLocked setter should not crash when camera controller is null',
+      () {
+        // Arrange: Ensure camera controller is null
+        scppgController.cameraController = null;
+
+        // Act & Assert: Should not throw
+        expect(
+          () => scppgController.isFocusAndExposureLocked = true,
+          returnsNormally,
+        );
+        expect(scppgController.isFocusAndExposureLocked, true);
+      },
+    );
+
+    test('Both setters should notify listeners', () {
+      // Arrange
+      scppgController.cameraController = mockCameraController;
+      when(
+        () => mockCameraController.setFlashMode(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockCameraController.setFocusMode(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockCameraController.setExposureMode(any()),
+      ).thenAnswer((_) async {});
+
+      int listenerCallCount = 0;
+      scppgController.addListener(() {
+        listenerCallCount++;
+      });
+
+      // Act
+      scppgController.isFlashOn = true;
+      scppgController.isFocusAndExposureLocked = true;
+
+      // Assert
+      expect(listenerCallCount, 2);
     });
   });
 }
