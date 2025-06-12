@@ -61,15 +61,6 @@ Add these keys to your `ios/Runner/Info.plist`:
 <string>This app needs camera access to measure heart rate</string>
 ```
 
-### Installation
-
-Add the package to your `pubspec.yaml`:
-
-```yaml
-dependencies:
-  scppg: ^1.0.0
-```
-
 ## Usage
 
 ### Basic Implementation
@@ -203,6 +194,7 @@ Photoplethysmography (PPG) is an optical technique for detecting blood volume ch
 ## Additional information
 
 For more information on using SCPPG for heart rate monitoring, see:
+
 - Check out the full example app in the `/example` folder
 - [Photoplethysmography Principles](https://en.wikipedia.org/wiki/Photoplethysmogram)
 
