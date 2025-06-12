@@ -46,6 +46,6 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Esta aplicación necesita acceso a la cámara para medir el ritmo cardíaco mediante fotopletismografía</string>
+	<string>This app needs camera access to record SCPPG</string>
 </dict>
 </plist>
