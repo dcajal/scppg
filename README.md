@@ -63,91 +63,7 @@ Add these keys to your `ios/Runner/Info.plist`:
 
 ## Usage
 
-### Basic Implementation
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:scppg/scppg.dart';
-
-class HeartRateMonitorScreen extends StatefulWidget {
-  @override
-  _HeartRateMonitorScreenState createState() => _HeartRateMonitorScreenState();
-}
-
-class _HeartRateMonitorScreenState extends State<HeartRateMonitorScreen> {
-  late ScppgController _controller;
-  List<SCPPGData> _dataPoints = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = ScppgController(fps: 30);
-    _controller.init();
-    
-    // Listen to SCPPG data updates
-    _controller.addListener(() {
-      if (_controller.ppgData != null) {
-        setState(() {
-          _dataPoints.add(_controller.ppgData!);
-          // Process data or calculate heart rate here
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Heart Rate Monitor')),
-      body: Column(
-        children: [
-          // Camera preview
-          if (_controller.isSensing)
-            SizedBox(
-              height: 300,
-              child: CameraPreview(_controller.cameraController),
-            ),
-          
-          // Controls
-          ElevatedButton(
-            onPressed: () {
-              if (_controller.isSensing) {
-                _controller.stopSensing();
-              } else {
-                _controller.startSensing();
-              }
-              setState(() {});
-            },
-            child: Text(_controller.isSensing ? 'Stop' : 'Start'),
-          ),
-          
-          // Toggle flash
-          ElevatedButton(
-            onPressed: () {
-              _controller.isFlashOn = !_controller.isFlashOn;
-            },
-            child: Text('Toggle Flash'),
-          ),
-          
-          // Display readings (red channel)
-          if (_dataPoints.isNotEmpty)
-            Text('Latest R value: ${_dataPoints.last.r?.toStringAsFixed(2)}'),
-        ],
-      ),
-    );
-  }
-}
-```
-
-### Advanced Usage
-
-For more advanced usage, including implementing heart rate algorithms, charts, and signal processing, check out the examples in the `/example` folder.
+Check out the examples in the `/example` folder.
 
 ## API Reference
 
@@ -195,7 +111,6 @@ Photoplethysmography (PPG) is an optical technique for detecting blood volume ch
 
 For more information on using SCPPG for heart rate monitoring, see:
 
-- Check out the full example app in the `/example` folder
 - [Photoplethysmography Principles](https://en.wikipedia.org/wiki/Photoplethysmogram)
 
 ### Issues and Feedback
