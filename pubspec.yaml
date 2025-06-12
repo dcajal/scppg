@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
 
   camera: ^0.11.1
+  camera_avfoundation: 0.9.18+14
   permission_handler: ^12.0.0
 
 dev_dependencies:
