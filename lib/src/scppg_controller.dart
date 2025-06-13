@@ -393,10 +393,6 @@ class ScppgController extends ChangeNotifier {
     g = g.clamp(0.0, 1.0) * 255;
     b = b.clamp(0.0, 1.0) * 255;
 
-    debugPrint(
-      "[ScppgController] Extracted RGBY values: r=${r.toStringAsFixed(3)}, g=${g.toStringAsFixed(3)}, b=${b.toStringAsFixed(3)}, y=${y.toStringAsFixed(3)}, u=${u.toStringAsFixed(3)}, v=${v.toStringAsFixed(3)}",
-    );
-
     return {'r': r, 'g': g, 'b': b, 'y': y};
   }
 
