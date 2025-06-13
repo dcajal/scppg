@@ -338,7 +338,6 @@ class ScppgController extends ChangeNotifier {
         image.planes[1].bytes[0] == image.planes[2].bytes[0]) {
       // Separate U and V planes, as in Android YUV_420_888
       // Separate planes may point to the same data and must be treated as interleaved
-      // Some Android devices may present this format too
       u =
           image.planes[1].bytes.reduce((a, b) => a + b) /
           image.planes[1].bytes.length;
@@ -347,6 +346,7 @@ class ScppgController extends ChangeNotifier {
           image.planes[2].bytes.length;
     } else {
       // Interleaved UV plane, as in iOS kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+      // Some Android devices may present this format too
       var uvBytes = image.planes[1].bytes;
       double sumU = 0, sumV = 0;
 
@@ -360,18 +360,28 @@ class ScppgController extends ChangeNotifier {
     }
 
     // Convert YUV to RGB with platform-specific range handling
-    double yNorm, uNorm, vNorm;
-
     if (Platform.isIOS) {
       // iOS uses video range: Y [16,235], U/V [16,240]
-      yNorm = (y - 16) / 219; // 235 - 16 = 219
-      uNorm = (u - 16) / 224; // 240 - 16 = 224
-      vNorm = (v - 16) / 224; // 240 - 16 = 224
+      // Clamp YUV values to video range to avoid noise effects in the mean
+      y = y.clamp(16.0, 235.0);
+      u = u.clamp(16.0, 240.0);
+      v = v.clamp(16.0, 240.0);
+
+      // Scale to full range [0,255]
+      y = (y - 16) * (255.0 / 219.0); // 235 - 16 = 219
+      u = (u - 16) * (255.0 / 224.0); // 240 - 16 = 224
+      v = (v - 16) * (255.0 / 224.0); // 240 - 16 = 224
+
+      // Clamp to [0,255] range after scaling
+      y = y.clamp(0.0, 255.0);
+      u = u.clamp(0.0, 255.0);
+      v = v.clamp(0.0, 255.0);
     } else if (Platform.isAndroid) {
       // Android uses full range: Y, U, V [0,255]
-      yNorm = y / 255;
-      uNorm = u / 255;
-      vNorm = v / 255;
+      // Clamp YUV values to full range to avoid noise effects in the mean
+      y = y.clamp(0.0, 255.0);
+      u = u.clamp(0.0, 255.0);
+      v = v.clamp(0.0, 255.0);
     } else {
       debugPrint(
         "[ScppgController] Unsupported platform ${Platform.operatingSystem}",
@@ -379,19 +389,23 @@ class ScppgController extends ChangeNotifier {
       return null;
     }
 
-    // Center U and V. 0.5 represents neutral color (e.g. no blue-yellow or red-green bias)
-    uNorm = uNorm - 0.5;
-    vNorm = vNorm - 0.5;
+    // Center U and V values
+    u -= 128;
+    v -= 128;
 
-    // YUV to RGB conversion using ITU-R BT.601 standard
-    r = yNorm + 1.402 * vNorm;
-    g = yNorm - 0.344136 * uNorm - 0.714136 * vNorm;
-    b = yNorm + 1.772 * uNorm;
+    // YUV to RGB conversion using ITU-R BT.601 standard for full range
+    r = y + 1.402 * v;
+    g = y - 0.344136 * u - 0.714136 * v;
+    b = y + 1.772 * u;
 
-    // Clamp to [0,1] range and scale to [0,255] - mantener decimales para mayor precisión
-    r = r.clamp(0.0, 1.0) * 255;
-    g = g.clamp(0.0, 1.0) * 255;
-    b = b.clamp(0.0, 1.0) * 255;
+    // Clamp to [0,255] range
+    r = r.clamp(0.0, 255.0);
+    g = g.clamp(0.0, 255.0);
+    b = b.clamp(0.0, 255.0);
+
+    print(
+      "[ScppgController] Extracted RGBY values: r=$r, g=$g, b=$b, y=$y, u=$u, v=$v",
+    );
 
     return {'r': r, 'g': g, 'b': b, 'y': y};
   }
