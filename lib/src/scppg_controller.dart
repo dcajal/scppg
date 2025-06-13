@@ -7,9 +7,8 @@ import 'package:flutter/material.dart';
 
 /// Data class representing a single SCPPG (Smartphone Camera-based Photoplethysmography) reading
 ///
-/// Contains RGB color values extracted from camera frames and the timestamp
-/// when the measurement was taken. This data is used for heart rate detection
-/// and other physiological signal analysis.
+/// Contains RGB color and Y (luminance) values extracted from camera frames and
+/// the timestamp when the measurement was taken.
 class SCPPGData {
   /// Red color component (0-255), null if finger not detected
   final double? r;
@@ -20,11 +19,14 @@ class SCPPGData {
   /// Blue color component (0-255), null if finger not detected
   final double? b;
 
+  /// Luminance (brightness) value (0-255), null if finger not detected
+  final double? y;
+
   /// Timestamp when this reading was captured
   final DateTime? timestamp;
 
   /// Creates a new SCPPG data instance
-  SCPPGData({this.r, this.g, this.b, this.timestamp});
+  SCPPGData({this.r, this.g, this.b, this.y, this.timestamp});
 }
 
 /// Controller for managing SCPPG (Smartphone Camera-based Photoplethysmography) sensing
@@ -175,11 +177,12 @@ class ScppgController extends ChangeNotifier {
   /// Disposes of camera resources, stops image processing, and resets
   /// all sensing-related state to default values.
   void stopSensing() {
-    _disposeController();
     _isFlashOn = false;
     _isFocusAndExposureLocked = false;
     _isSensing = false;
+    _disposeController();
     notifyListeners();
+    debugPrint('[ScppgController] Sensing stopped and controller disposed');
   }
 
   /// Provides a camera preview widget
@@ -234,11 +237,7 @@ class ScppgController extends ChangeNotifier {
     _cameraController = CameraController(
       selectedCamera,
       ResolutionPreset.low, // Low resolution is sufficient for PPG
-      imageFormatGroup:
-          Platform.isAndroid
-              ? ImageFormatGroup
-                  .yuv420 // Android: YUV format
-              : ImageFormatGroup.bgra8888, // iOS: BGRA format
+      imageFormatGroup: ImageFormatGroup.yuv420,
       enableAudio: false, // Audio not needed for PPG
       fps: fps,
     );
@@ -260,6 +259,11 @@ class ScppgController extends ChangeNotifier {
   /// are thrown even if the controller is already disposed.
   void _disposeController() {
     // Stop image stream safely
+    if (_cameraController == null) {
+      debugPrint('[ScppgController] Camera controller is already disposed');
+      return;
+    }
+
     try {
       _cameraController?.stopImageStream();
     } catch (error) {
@@ -289,25 +293,27 @@ class ScppgController extends ChangeNotifier {
     _now = DateTime.now();
 
     // Extract RGB values based on platform and image format
-    final rgbValues = _extractRGBFromImage(image);
+    final rgbyValues = _extractRGBYFromImage(image);
 
-    if (rgbValues == null) {
+    if (rgbyValues == null) {
       // Unsupported format or processing error
       return;
     }
 
-    double r = rgbValues['r']!;
-    double g = rgbValues['g']!;
-    double b = rgbValues['b']!;
+    double r = rgbyValues['r']!;
+    double g = rgbyValues['g']!;
+    double b = rgbyValues['b']!;
+    double y = rgbyValues['y']!;
 
     // Apply finger detection algorithm
-    final processedValues = _applyFingerDetection(r, g, b);
+    final processedValues = _applyFingerDetection(r, g, b, y);
 
     // Update SCPPG data and notify listeners
     _scppgData = SCPPGData(
       r: processedValues['r'],
       g: processedValues['g'],
       b: processedValues['b'],
+      y: processedValues['y'],
       timestamp: _now,
     );
 
@@ -316,58 +322,21 @@ class ScppgController extends ChangeNotifier {
 
   /// Extracts RGB values from camera image based on platform-specific formats
   ///
-  /// Returns a map with 'r', 'g', 'b' keys containing double values,
+  /// Returns a map with 'r', 'g', 'b', 'y' keys containing double values,
   /// or null if the image format is unsupported.
-  Map<String, double>? _extractRGBFromImage(CameraImage image) {
-    if (Platform.isIOS && image.format.group == ImageFormatGroup.bgra8888) {
-      return _extractRGBFromBGRA(image);
-    } else if (Platform.isAndroid &&
-        image.format.group == ImageFormatGroup.yuv420) {
-      return _extractRGBFromYUV(image);
-    } else {
-      debugPrint(
-        "[ScppgController] Unsupported image format: ${image.format.group} on ${Platform.operatingSystem}",
-      );
-      return null;
-    }
-  }
-
-  /// Extracts RGB values from iOS BGRA8888 format
-  ///
-  /// On iOS, camera images are provided in BGRA format where each pixel
-  /// contains 4 bytes: Blue, Green, Red, Alpha (transparency).
-  Map<String, double> _extractRGBFromBGRA(CameraImage image) {
-    final plane = image.planes[0];
-    double r = 0.0, g = 0.0, b = 0.0;
-
-    if (plane.bytes.isNotEmpty) {
-      // BGRA format: bytes[0]=Blue, bytes[1]=Green, bytes[2]=Red, bytes[3]=Alpha
-      b = plane.bytes[0].toDouble();
-      g = plane.bytes[1].toDouble();
-      r = plane.bytes[2].toDouble();
-      // Alpha channel (plane.bytes[3]) is ignored for PPG analysis
-    }
-
-    return {'r': r, 'g': g, 'b': b};
-  }
-
-  /// Extracts RGB values from Android YUV420 format
-  ///
-  /// On Android, camera images are in YUV format where:
-  /// - Y represents luminance (brightness)
-  /// - U and V represent chrominance (color information)
-  /// These need to be converted to RGB using standard formulas.
-  Map<String, double> _extractRGBFromYUV(CameraImage image) {
+  Map<String, double>? _extractRGBYFromImage(CameraImage image) {
     // Calculate average Y (luminance) value
     double y =
         image.planes[0].bytes.reduce((a, b) => a + b) /
         image.planes[0].bytes.length;
 
     double u = 0.0, v = 0.0;
+    double r = 0.0, g = 0.0, b = 0.0;
 
     // Extract U and V chrominance values
-    if (image.planes.length == 3) {
-      // Separate U and V planes
+    if (image.planes.length == 3 &&
+        image.planes[1].bytes[0] == image.planes[2].bytes[0]) {
+      // Separate U and V planes, as in Android YUV_420_888
       u =
           image.planes[1].bytes.reduce((a, b) => a + b) /
           image.planes[1].bytes.length;
@@ -375,7 +344,7 @@ class ScppgController extends ChangeNotifier {
           image.planes[2].bytes.reduce((a, b) => a + b) /
           image.planes[2].bytes.length;
     } else {
-      // Interleaved UV plane (common format)
+      // Interleaved UV plane, as in iOS kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
       var uvBytes = image.planes[1].bytes;
       double sumU = 0, sumV = 0;
 
@@ -388,15 +357,45 @@ class ScppgController extends ChangeNotifier {
       v = sumV / (uvBytes.length / 2);
     }
 
-    // Convert YUV to RGB using standard conversion formulas
-    double r = (y + 1.402 * (v - 128)).clamp(0.0, 255.0);
-    double g = (y - 0.344136 * (u - 128) - 0.714136 * (v - 128)).clamp(
-      0.0,
-      255.0,
-    );
-    double b = (y + 1.772 * (u - 128)).clamp(0.0, 255.0);
+    // Convert YUV to RGB with platform-specific range handling
+    double yNorm, uNorm, vNorm;
 
-    return {'r': r, 'g': g, 'b': b};
+    if (Platform.isIOS) {
+      // iOS uses video range: Y [16,235], U/V [16,240]
+      yNorm = (y - 16) / 219; // 235 - 16 = 219
+      uNorm = (u - 16) / 224; // 240 - 16 = 224
+      vNorm = (v - 16) / 224; // 240 - 16 = 224
+    } else if (Platform.isAndroid) {
+      // Android uses full range: Y, U, V [0,255]
+      yNorm = y / 255;
+      uNorm = u / 255;
+      vNorm = v / 255;
+    } else {
+      debugPrint(
+        "[ScppgController] Unsupported platform ${Platform.operatingSystem}",
+      );
+      return null;
+    }
+
+    // Center U and V. 0.5 represents neutral color (e.g. no blue-yellow or red-green bias)
+    uNorm = uNorm - 0.5;
+    vNorm = vNorm - 0.5;
+
+    // YUV to RGB conversion using ITU-R BT.601 standard
+    r = yNorm + 1.402 * vNorm;
+    g = yNorm - 0.344136 * uNorm - 0.714136 * vNorm;
+    b = yNorm + 1.772 * uNorm;
+
+    // Clamp to [0,1] range and scale to [0,255]
+    r = (r.clamp(0.0, 1.0) * 255).round().toDouble();
+    g = (g.clamp(0.0, 1.0) * 255).round().toDouble();
+    b = (b.clamp(0.0, 1.0) * 255).round().toDouble();
+
+    debugPrint(
+      "[ScppgController] Extracted RGBY values: r=$r, g=$g, b=$b, y=$y",
+    );
+
+    return {'r': r, 'g': g, 'b': b, 'y': y};
   }
 
   /// Applies finger detection algorithm based on red color ratio
@@ -404,16 +403,26 @@ class ScppgController extends ChangeNotifier {
   /// If the red component ratio is below the threshold, it indicates
   /// that no finger is covering the camera, so all values are set to NaN.
   /// This helps filter out noise when the user isn't properly covering the camera.
-  Map<String, double?> _applyFingerDetection(double r, double g, double b) {
+  Map<String, double?> _applyFingerDetection(
+    double r,
+    double g,
+    double b,
+    double y,
+  ) {
     double totalPower = r + g + b;
 
     // Check if finger is detected based on red ratio threshold
     if (totalPower > 0 && (r / totalPower) >= (redRatioThreshold / 100.0)) {
       // Finger detected - return actual RGB values
-      return {'r': r, 'g': g, 'b': b};
+      return {'r': r, 'g': g, 'b': b, 'y': y};
     } else {
       // No finger detected - return NaN values to indicate invalid reading
-      return {'r': double.nan, 'g': double.nan, 'b': double.nan};
+      return {
+        'r': double.nan,
+        'g': double.nan,
+        'b': double.nan,
+        'y': double.nan,
+      };
     }
   }
 
