@@ -337,6 +337,8 @@ class ScppgController extends ChangeNotifier {
     if (image.planes.length == 3 &&
         image.planes[1].bytes[0] == image.planes[2].bytes[0]) {
       // Separate U and V planes, as in Android YUV_420_888
+      // Separate planes may point to the same data and must be treated as interleaved
+      // Some Android devices may present this format too
       u =
           image.planes[1].bytes.reduce((a, b) => a + b) /
           image.planes[1].bytes.length;
@@ -348,7 +350,7 @@ class ScppgController extends ChangeNotifier {
       var uvBytes = image.planes[1].bytes;
       double sumU = 0, sumV = 0;
 
-      for (int i = 0; i < uvBytes.length; i += 2) {
+      for (int i = 0; i < uvBytes.length - 1; i += 2) {
         sumU += uvBytes[i]; // U values at even indices
         sumV += uvBytes[i + 1]; // V values at odd indices
       }
@@ -392,7 +394,7 @@ class ScppgController extends ChangeNotifier {
     b = (b.clamp(0.0, 1.0) * 255).round().toDouble();
 
     debugPrint(
-      "[ScppgController] Extracted RGBY values: r=$r, g=$g, b=$b, y=$y",
+      "[ScppgController] Extracted RGBY values: r=${r.toStringAsFixed(1)}, g=${g.toStringAsFixed(1)}, b=${b.toStringAsFixed(1)}, y=${y.toStringAsFixed(1)}, u=${u.toStringAsFixed(1)}, v=${v.toStringAsFixed(1)}",
     );
 
     return {'r': r, 'g': g, 'b': b, 'y': y};
