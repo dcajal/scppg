@@ -18,10 +18,10 @@ class PPGDataService {
     List<SensorValue> plotValues,
     Function(bool) setRenderChart,
   ) {
-    double? g = data.g;
+    double? y = data.y;
 
     // Shift buffer values and update the last element
-    shiftAndUpdate(buffer, g ?? double.nan);
+    shiftAndUpdate(buffer, y ?? double.nan);
 
     // Update plot values based on buffer validity
     if (buffer.any((e) => e.isNaN)) {
@@ -29,7 +29,7 @@ class PPGDataService {
       shiftAndUpdate(plotValues, SensorValue(data.timestamp, null));
     } else {
       setRenderChart(true);
-      shiftAndUpdate(plotValues, SensorValue(data.timestamp, -g!));
+      shiftAndUpdate(plotValues, SensorValue(data.timestamp, -y!));
     }
   }
 
