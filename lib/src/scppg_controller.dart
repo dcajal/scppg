@@ -388,13 +388,13 @@ class ScppgController extends ChangeNotifier {
     g = yNorm - 0.344136 * uNorm - 0.714136 * vNorm;
     b = yNorm + 1.772 * uNorm;
 
-    // Clamp to [0,1] range and scale to [0,255]
-    r = (r.clamp(0.0, 1.0) * 255).round().toDouble();
-    g = (g.clamp(0.0, 1.0) * 255).round().toDouble();
-    b = (b.clamp(0.0, 1.0) * 255).round().toDouble();
+    // Clamp to [0,1] range and scale to [0,255] - mantener decimales para mayor precisión
+    r = r.clamp(0.0, 1.0) * 255;
+    g = g.clamp(0.0, 1.0) * 255;
+    b = b.clamp(0.0, 1.0) * 255;
 
     debugPrint(
-      "[ScppgController] Extracted RGBY values: r=${r.toStringAsFixed(1)}, g=${g.toStringAsFixed(1)}, b=${b.toStringAsFixed(1)}, y=${y.toStringAsFixed(1)}, u=${u.toStringAsFixed(1)}, v=${v.toStringAsFixed(1)}",
+      "[ScppgController] Extracted RGBY values: r=${r.toStringAsFixed(3)}, g=${g.toStringAsFixed(3)}, b=${b.toStringAsFixed(3)}, y=${y.toStringAsFixed(3)}, u=${u.toStringAsFixed(3)}, v=${v.toStringAsFixed(3)}",
     );
 
     return {'r': r, 'g': g, 'b': b, 'y': y};
