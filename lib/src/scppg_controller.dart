@@ -362,20 +362,10 @@ class ScppgController extends ChangeNotifier {
     // Convert YUV to RGB with platform-specific range handling
     if (Platform.isIOS) {
       // iOS uses video range: Y [16,235], U/V [16,240]
-      // Clamp YUV values to video range to avoid noise effects in the mean
-      y = y.clamp(16.0, 235.0);
-      u = u.clamp(16.0, 240.0);
-      v = v.clamp(16.0, 240.0);
-
       // Scale to full range [0,255]
       y = (y - 16) * (255.0 / 219.0); // 235 - 16 = 219
-      u = (u - 16) * (255.0 / 224.0); // 240 - 16 = 224
-      v = (v - 16) * (255.0 / 224.0); // 240 - 16 = 224
-
-      // Clamp to [0,255] range after scaling
-      y = y.clamp(0.0, 255.0);
-      u = u.clamp(0.0, 255.0);
-      v = v.clamp(0.0, 255.0);
+      u = u * (255.0 / 224.0); // 240 - 16 = 224
+      v = v * (255.0 / 224.0); // 240 - 16 = 224
     } else if (Platform.isAndroid) {
       // Android uses full range: Y, U, V [0,255]
       // Clamp YUV values to full range to avoid noise effects in the mean
@@ -397,15 +387,6 @@ class ScppgController extends ChangeNotifier {
     r = y + 1.402 * v;
     g = y - 0.344136 * u - 0.714136 * v;
     b = y + 1.772 * u;
-
-    // Clamp to [0,255] range
-    r = r.clamp(0.0, 255.0);
-    g = g.clamp(0.0, 255.0);
-    b = b.clamp(0.0, 255.0);
-
-    print(
-      "[ScppgController] Extracted RGBY values: r=$r, g=$g, b=$b, y=$y, u=$u, v=$v",
-    );
 
     return {'r': r, 'g': g, 'b': b, 'y': y};
   }
