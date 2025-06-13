@@ -29,11 +29,11 @@ class ToggleControlsWidget extends StatelessWidget {
             minHeight: 0.11 * displayHeight, // Toggle button height factor
           ),
           borderRadius: BorderRadius.circular(10),
-          borderColor: Colors.grey,
+          borderColor: Colors.grey[400],
           fillColor: Colors.white,
           disabledColor: Colors.white,
           selectedColor: Colors.black,
-          selectedBorderColor: Colors.grey,
+          selectedBorderColor: Colors.grey[400],
           disabledBorderColor: Colors.white,
           onPressed: scppgController.isSensing ? onPressed : null,
           isSelected: [

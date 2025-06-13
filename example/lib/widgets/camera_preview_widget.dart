@@ -29,7 +29,9 @@ class CameraPreviewWidget extends StatelessWidget {
                       scppgController.cameraController.value.aspectRatio,
                   child: scppgController.cameraPreview,
                 )
-                : Container(color: Colors.grey),
+                : Container(
+                  color: Colors.grey[400],
+                ), // Grey container when not sensing
             // Show camera icon when not sensing
             if (!scppgController.isSensing)
               const Icon(

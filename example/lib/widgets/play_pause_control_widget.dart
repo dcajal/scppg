@@ -29,7 +29,12 @@ class PlayPauseControlWidget extends StatelessWidget {
         children: [
           Ink(
             decoration: const ShapeDecoration(
-              color: Colors.grey,
+              color: Color.fromARGB(
+                255,
+                185,
+                185,
+                185,
+              ), // Background color for the button
               shape: CircleBorder(),
             ),
             child: IconButton(

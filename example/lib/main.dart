@@ -141,28 +141,34 @@ class ScppgAppState extends State<ScppgApp> {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: Scaffold(
-        body: Column(
-          children: [
-            SizedBox(height: cardSeparation),
+        body: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: displayWidth * 0.04,
+            vertical: displayHeight * 0.04,
+          ),
+          child: Column(
+            children: [
+              SizedBox(height: cardSeparation),
 
-            // Camera and control row
-            _buildCameraControlRow(displayWidth),
+              // Camera and control row
+              _buildCameraControlRow(displayWidth),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            // Toggle controls
-            ToggleControlsWidget(
-              scppgController: _scppgController,
-              onPressed: _onTogglePressed,
-            ),
+              // Toggle controls
+              ToggleControlsWidget(
+                scppgController: _scppgController,
+                onPressed: _onTogglePressed,
+              ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            // PPG Chart
-            _buildChartSection(displayHeight),
+              // PPG Chart
+              _buildChartSection(displayHeight),
 
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
