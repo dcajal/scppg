@@ -3,6 +3,14 @@ import '../models/sensor_value.dart';
 
 /// Service class handling PPG data processing and chart updates
 class PPGDataService {
+  /// Shift elements in a fixed-length list to the left and update the last element
+  static void shiftAndUpdate<T>(List<T> list, T newValue) {
+    for (int i = 0; i < list.length - 1; i++) {
+      list[i] = list[i + 1];
+    }
+    list[list.length - 1] = newValue;
+  }
+
   /// Updates plot and buffer with PPG data
   static void updatePlotWithPPGData(
     SCPPGData data,
@@ -12,19 +20,16 @@ class PPGDataService {
   ) {
     double? g = data.g;
 
-    // Update buffer - removes oldest value and adds new one
-    buffer.removeAt(0);
-    buffer.add(g ?? double.nan);
+    // Shift buffer values and update the last element
+    shiftAndUpdate(buffer, g ?? double.nan);
 
     // Update plot values based on buffer validity
     if (buffer.any((e) => e.isNaN)) {
       setRenderChart(false);
-      plotValues.removeAt(0);
-      plotValues.add(SensorValue(data.timestamp, null));
+      shiftAndUpdate(plotValues, SensorValue(data.timestamp, null));
     } else {
       setRenderChart(true);
-      plotValues.removeAt(0);
-      plotValues.add(SensorValue(data.timestamp, -g!));
+      shiftAndUpdate(plotValues, SensorValue(data.timestamp, -g!));
     }
   }
 
