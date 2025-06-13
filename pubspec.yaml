@@ -1,6 +1,6 @@
 name: scppg
 description: A Flutter package for smartphone camera photoplethysmography (SCPPG) that enables heart rate monitoring using smartphone cameras.
-version: 1.1.0
+version: 1.2.0
 homepage: https://github.com/dcajal/scppg
 repository: https://github.com/dcajal/scppg
 

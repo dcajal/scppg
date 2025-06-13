@@ -1,3 +1,9 @@
+## 1.2.0
+
+- **Improved example clarity**: Enhanced the example to make it easier to understand
+- **Fixed RGB calculation issue**: Resolved a bug causing RGB calculation failures on iOS
+- **Pinned camera_avfoundation dependency**: Locked camera_avfoundation to version 0.9.18+14 due to [reported issue](https://github.com/flutter/flutter/issues/170240#issuecomment-2967164077)
+
 ## 1.1.0
 
 - **Enhanced camera control**: `isFlashOn` and `isFocusAndExposureLocked` setters now directly control camera hardware when camera controller is available
