@@ -1,8 +1,12 @@
+## 1.2.1
+
+- **Unpinned camera_avfoundation dependency**: Removed version lock on `camera_avfoundation` as the reported issue has been resolved
+
 ## 1.2.0
 
 - **Improved example clarity**: Enhanced the example to make it easier to understand
 - **Fixed RGB calculation issue**: Resolved a bug causing RGB calculation failures on iOS
-- **Pinned camera_avfoundation dependency**: Locked camera_avfoundation to version 0.9.18+14 due to [reported issue](https://github.com/flutter/flutter/issues/170240#issuecomment-2967164077)
+- **Pinned camera_avfoundation dependency**: Locked `camera_avfoundation` to version 0.9.18+14 due to [reported issue](https://github.com/flutter/flutter/issues/170240#issuecomment-2967164077)
 
 ## 1.1.0
 
